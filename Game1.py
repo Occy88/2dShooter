@@ -42,8 +42,8 @@ import random
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 # dimensions
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1400
+SCREEN_HEIGHT = 900
 G_WIDTH = 15
 # rate
 SPEED = 60 * 60 * 24 * 12
@@ -143,7 +143,7 @@ class Bullet:
             self.length = 3
             self.id = 4
         if x==6:
-            self.velocityBullet=700
+            self.velocityBullet=400
             self.length=5
             self.id=6
 
@@ -243,7 +243,7 @@ class Player:
         if id == 5:
             self.bounce += 1
         if id==6:
-            self.fireRate=400
+            self.fireRate=5000
             self.ammo=20
             self.ammoType=id
 
