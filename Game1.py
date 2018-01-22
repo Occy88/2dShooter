@@ -297,6 +297,7 @@ def main():
     coord_list=[[2],[2],[2],[2]]
     coord_listB=True
     grid = []
+    dist=[[],[],[],[],[]]
     # grid to manage location and efficient collision detection
     # ---------------------------------------------------------------------------
     #   checks squares on 4 sides and computes colisions if block object returns true.
@@ -464,7 +465,7 @@ def main():
     player.fastFire = False
     player.id = 1
     player.remaining=1
-    player.rotateSpeed=50
+
     player.color = (255, 0, 0)
     player.initialX = player.x
     player.initialY = player.y
@@ -480,7 +481,7 @@ def main():
     player.initialY = player.y
     player.color = (0, 0, 255)
     player.id = 2
-    player.rotateSpeed=50
+
     player.changeAmmo(1)
     player.remaining=1
     player_list.append(player)
@@ -507,7 +508,7 @@ def main():
     player.id = 3
     player.changeAmmo(2)
     player.ammo = 100000
-    player.rotateSpeed=20
+
     player_list.append(player)
 
 
@@ -516,13 +517,29 @@ def main():
     player.x = x
     player.y = y
     player.remaining = 1
-    player.rotateSpeed=20
+
     player.radius = PLAYER_RADIUS
     player.maxSpeed = PlAYER_SPEED + 100
     player.initialX = player.x
     player.initialY = player.y
     player.color = (0, 255, 0)
     player.id = 4
+    player.changeAmmo(2)
+    player.ammo = 100000
+    player_list.append(player)
+
+    player = Player()
+    x, y = getSpareSpot()
+    player.x = x
+    player.y = y
+    player.remaining = 1
+
+    player.radius = PLAYER_RADIUS
+    player.maxSpeed = PlAYER_SPEED + 100
+    player.initialX = player.x
+    player.initialY = player.y
+    player.color = (0, 255, 0)
+    player.id = 5
     player.changeAmmo(2)
     player.ammo = 100000
     player_list.append(player)
@@ -550,16 +567,16 @@ def main():
                 player.velocityY = 0
                 player.velocityX = 0
 
-    def right(id):
+    def right(id,speed):
         for player in player_list:
             if player.id == id:
-                player.angleFromNormal += math.pi / player.rotateSpeed
+                player.angleFromNormal += math.pi / speed
 
 
-    def left(id):
+    def left(id,speed):
         for player in player_list:
             if player.id == id:
-                player.angleFromNormal -= math.pi / player.rotateSpeed
+                player.angleFromNormal -= math.pi / speed
 
 
     def fire(id, fps):
@@ -658,9 +675,9 @@ def main():
             if player.id > 2:
                 angle = findClosest(player.id)
                 if player.angleFromNormal<angle:
-                    right(player.id)
+                    right(player.id,20)
                 if player.angleFromNormal>angle:
-                    left(player.id)
+                    left(player.id,20)
 
                 forward(player.id)
                 fire(player.id, fps)
@@ -817,9 +834,9 @@ def main():
                 angle = follow(x,y,id)
 
                 if angle > player.angleFromNormal:
-                    right(player.id)
+                    right(player.id,20)
                 if angle < player.angleFromNormal:
-                    left(player.id)
+                    left(player.id,20)
                 forward(player.id)
 
 
@@ -1120,10 +1137,10 @@ def main():
             if keys[pygame.K_DOWN] == False and keys[pygame.K_UP] == False:
                 stop(1)
             if keys[pygame.K_RIGHT]:
-                right(1)
+                right(1,30)
 
             if keys[pygame.K_LEFT]:
-                left(1)
+                left(1,30)
 
                 # ---------PLYER 1----------BULLET-------
 
@@ -1144,10 +1161,10 @@ def main():
                 stop(2)
 
             if keys[pygame.K_s]:
-                left(2)
+                left(2,30)
 
             if keys[pygame.K_f]:
-                right(2)
+                right(2,30)
 
             # -------player 2 bullet
             if keys[pygame.K_q]:
@@ -1159,8 +1176,6 @@ def main():
             # --------------------AI----------(SHIT)----------Later Consideration -make a maze solver and this hunting algorithm :D---------------
 
             #hunt()
-            for player in player_list:
-                dist=100000
 
 
 
@@ -1370,7 +1385,7 @@ def main():
             for player in player_list:
                 if player.id >=3:
                     if player.velocityX==0 or seconds!=seconds2:
-                        coord_list[player.id-3],dist=getNextCoordList(player.id)
+                        coord_list[player.id-3],distanceTo=getNextCoordList(player.id)
                     x,y=coord_list[player.id-3][0]
 
 
@@ -1384,10 +1399,16 @@ def main():
                     dL, clistL, xL, yL = getCoords(4, player.x, player.y)
                     pygame.draw.rect(screen, (200, 0, 0), (xL, yL, G_WIDTH, G_WIDTH))
                     pygame.draw.rect(screen, (0,200,0), (x, y, G_WIDTH, G_WIDTH))
+
                     a = getDist(player.x, player.y, 1)
                     b = getDist(player.x, player.y, 2)
-                    print (str(a)+","+str(b))
-                    if a<15000 or b<15000:
+                    print(str(player.id-3))
+                    if a<b:
+
+                        dist[player.id-3]=a
+                    if b<a:
+                        dist[player.id - 3] = b
+                    if dist[player.id-3]<10000:
                         hunt()
                     else:
                         if getDist(x,y,player.id)>200:
@@ -1431,14 +1452,14 @@ def main():
                         bullet.y + bullet.length * math.sin(bullet.angleFromNormal)), 2)
 
                     # show collision detection:D
-            #                for block in grid[x + 1][y]:
-            #                    pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-            #                for block in grid[x - 1][y]:
-            #                    pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-            #                for block in grid[x][y + 1]:
-            #                    pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-            #                for block in grid[x][y - 1]:
-            #                    pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                    for block in grid[x + 1][y]:
+                        pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                    for block in grid[x - 1][y]:
+                        pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                    for block in grid[x][y + 1]:
+                        pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                    for block in grid[x][y - 1]:
+                        pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
 
             # --- Wrap-up--draw score:
 
