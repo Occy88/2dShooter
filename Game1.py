@@ -6,17 +6,7 @@
  ENJOY :D
 
 
-TO DO:
-
-Draw map screen
-
-home screen
-
-game over screen
-
-pictures
-
-fix turning bug
+FIX ANGLES Rotating to anf from.
 
 
 
@@ -29,7 +19,7 @@ fix turning bug
 
 """
 
-import array
+
 import pygame
 import math
 import sys
@@ -55,8 +45,9 @@ PlAYER_SPEED = 50
 PLAYER_1_SCORE = 0
 PLAYER_2_SCORE = 0
 PLAYER_RELOAD = 200
+
+
 # game_constants
-MAX_POWERUPS = 15
 
 
 class PowerUp:
@@ -83,9 +74,9 @@ class PowerUp:
         if x == 5:
             self.id = 5
             self.color = (255, 0, 255)
-        if x==6:
-            self.id=6
-            self.color=(0,255,255)
+        if x == 6:
+            self.id = 6
+            self.color = (0, 255, 255)
 
 
 class Block:
@@ -142,51 +133,60 @@ class Bullet:
             self.velocityBullet = 200
             self.length = 3
             self.id = 4
-        if x==6:
-            self.velocityBullet=400
-            self.length=5
-            self.id=6
+        if x == 6:
+            self.velocityBullet = 400
+            self.length = 5
+            self.id = 6
+
 
 class Button:
     def __init__(self):
-        self.x=0
-        self.y=0
-        self.sizeX=0
-        self.sizeY=0
-        self.text=''
-        self.color=(0,100,0)
-        self.colorT=(100,0,100)
-        self.fontSize=40
-    def draw(self,screen):
+        self.x = 0
+        self.y = 0
+        self.sizeX = 0
+        self.sizeY = 0
+        self.text = ''
+        self.color = (0, 100, 0)
+        self.colorT = (100, 0, 100)
+        self.fontSize = 40
+
+    def draw(self, screen):
         pygame.draw.rect(screen, self.color, (SCREEN_WIDTH / self.x, SCREEN_HEIGHT / self.y, self.sizeX, self.sizeY))
         font = pygame.font.Font(None, self.fontSize)
         text = font.render(self.text, 1, self.colorT)
         textpos = text.get_rect()
-        textpos.centerx= SCREEN_WIDTH/self.x+self.sizeX/2
-        textpos.centery = SCREEN_HEIGHT/self.y+self.sizeY/2
+        textpos.centerx = SCREEN_WIDTH / self.x + self.sizeX / 2
+        textpos.centery = SCREEN_HEIGHT / self.y + self.sizeY / 2
         screen.blit(text, textpos)
+
     def getMinX(self):
-        return SCREEN_WIDTH/self.x
+        return SCREEN_WIDTH / self.x
+
     def getMinY(self):
-        return SCREEN_HEIGHT/self.y
+        return SCREEN_HEIGHT / self.y
+
     def getMaxX(self):
-        return SCREEN_WIDTH/self.x+self.sizeX
+        return SCREEN_WIDTH / self.x + self.sizeX
+
     def getMaxY(self):
-        return SCREEN_HEIGHT/self.y+self.sizeY
+        return SCREEN_HEIGHT / self.y + self.sizeY
 
 
 class Player:
     def __init__(self):
+
+        self.remaining = 0
         # id
         self.id = 0
         self.initialX = 0
         self.initialY = 0
         self.score = 0
-        self.color=(0,0,0)
+        self.color = (0, 0, 0)
         # location
         self.x = 0
         self.y = 0
-
+        self.fX=0
+        self.fY=0
         # velocity
         self.velocityX = 0.0
         self.velocityY = 0.0
@@ -222,19 +222,20 @@ class Player:
         self.maxSpeed = PlAYER_SPEED
         self.score += 1
 
+
     def changeAmmo(self, id):
 
         if id == 1:
             self.fireRate = 400
-            self.ammo = 20
+            self.ammo = 100
             self.ammoType = id
         if id == 2:
             self.fireRate = 1000
-            self.ammo = 50
+            self.ammo = 100
             self.ammoType = id
         if id == 3:
             self.fireRate = 150
-            self.ammo = 10
+            self.ammo = 20
             self.ammoType = id
         if id == 4:
             self.fireRate = 2000
@@ -242,24 +243,25 @@ class Player:
             self.ammoType = id
         if id == 5:
             self.bounce += 1
-        if id==6:
-            self.fireRate=5000
-            self.ammo=20
-            self.ammoType=id
+        if id == 6:
+            self.fireRate = 5000
+            self.ammo = 100
+            self.ammoType = id
+            self.rotateSpeed=0
 
 class Picture:
     def __init__(self):
         self.picture_l = []
         self.picture_l.append(pygame.transform.scale(pygame.image.load("img/intro.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT)))
-        self.index=0
+        self.index = 0
+
     def update(self):
-        if self.index>=len(self.picture_1):
-            self.index=0
+        if self.index >= len(self.picture_1):
+            self.index = 0
             return self.picture_1[self.index]
         else:
-            self.index+=1
+            self.index += 1
             return self.picture_1[self.index]
-
 
 
 def main():
@@ -273,7 +275,7 @@ def main():
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("2d Shooter")
 
-    #initialize button for keeping score and time
+    # initialize button for keeping score and time
     bMain = Button()
     bMain.sizeX = 200
     bMain.sizeY = 20
@@ -292,16 +294,13 @@ def main():
     enemy_list = []
     block_list = []
     player_list = []
-    maxPowerUps = 0
-
+    coord_list=[[2],[2],[2],[2]]
+    coord_listB=True
+    grid = []
     # grid to manage location and efficient collision detection
     # ---------------------------------------------------------------------------
-    #    Grid is my attempt at broad phase collision detection for the whole game
-    #    I attach objects that can collide to a 2d grid list
-    #    if there are more than two objects of a certain type (bullet, wall),(player,wall)(bullet,Player)(bullet,bullet)
-    #    then I switch to narrow phase collision detection between the objects of that list
+    #   checks squares on 4 sides and computes colisions if block object returns true.
     # ---------------------------------------------------------------------------
-    grid = []
 
     # initialize grid with Blocks, so first two dimensions are static
     block = Block()
@@ -315,7 +314,7 @@ def main():
             block.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
             rand = int(random.randint(0, 10))
-###--------------make true for random map(first below)
+            ###--------------make true for random map(first below)
             if rand == 1:
                 block.setTrue(False)
             else:
@@ -324,7 +323,101 @@ def main():
                 block.setTrue(True)
 
             grid[x][y].append(block)
-   #random map true or false (also for clearing)
+
+    def numReal(x, y):
+        real = 0
+        for block in grid[x - 1][y]:
+            if block.real:
+                real += 1
+        for block in grid[x + 1][y]:
+            if block.real:
+                real += 1
+        for block in grid[x][y - 1]:
+            if block.real:
+                real += 1
+        for block in grid[x][y + 1]:
+            if block.real:
+                real += 1
+        return real
+
+    def clean():
+        for x in range(0, len(grid)):
+            if x % 4 == 0:
+                for y in range(0, len(grid[0])):
+                    if y % 4 == 0:
+                        for block in grid[x][y]:
+                            block.setTrue(True)
+
+    def travel(x, y, dir):
+        if dir == 1:
+            for z in range(1, 4):
+                for block in grid[x - z][y]:
+                    block.setTrue(True)
+            return (x, y)
+        if dir == 2:
+            for z in range(1, 4):
+                for block in grid[x + z][y]:
+                    block.setTrue(True)
+            return (x, y)
+        if dir == 3:
+            for z in range(1, 4):
+                for block in grid[x][y - z]:
+                    block.setTrue(True)
+            return (x, y)
+        if dir == 4:
+            for z in range(1, 4):
+                for block in grid[x][y + z]:
+                    block.setTrue(True)
+            return (x, y)
+
+    def numRealC(x, y):
+        for block in grid[x + 1][y]:
+            if block.real:
+                return numReal(x + 4, y)
+        for block in grid[x - 1][y]:
+            if block.real:
+                return numReal(x - 4, y)
+        for block in grid[x][y + 1]:
+            if block.real:
+                return numReal(x, y + 4)
+        for block in grid[x + 1][y - 1]:
+            if block.real:
+                return numReal(x, y - 4)
+
+    def generateRandomMaze():
+        prevDir = random.randint(1, 4)
+        for x in range(0, len(grid) - 4):
+            if x % 4 == 0:
+                for y in range(0, len(grid[0]) - 3):
+                    if y % 4 == 0:
+                        direction = random.randint(1, 4)
+                        if numReal(x, y) <= 0:
+                            a = travel(x, y, direction)
+        # if num real yourself and num real connected to you ==1 then connect to something.
+        for x in range(0, len(grid) - 8):
+            if x % 4 == 0:
+                for y in range(0, len(grid[0]) - 8):
+                    if y % 4 == 0:
+                        if numReal(x, y) == 1 and numRealC(x, y) == 1:
+                            direction = random.randint(1, 4)
+                            prevDir = 0
+                            for block in grid[x + 1][y]:
+                                if block.real:
+                                    prevDir = 1
+                            for block in grid[x - 1][y]:
+                                if block.real:
+                                    prevDir = 2
+                            for block in grid[x][y + 1]:
+                                if block.real:
+                                    prevDir = 3
+                            for block in grid[x + 1][y - 1]:
+                                if block.real:
+                                    prevDir = 4
+                            while direction != prevDir:
+                                direction = random.randint(1, 4)
+                            travel(x, y, direction)
+
+    # random map true or false (also for clearing)
     def generateRandomMap(bool):
         for x in range(0, int(SCREEN_WIDTH / G_WIDTH)):
             for y in range(0, int(SCREEN_HEIGHT / G_WIDTH)):
@@ -335,7 +428,8 @@ def main():
                         block.setTrue(bool)
                     else:
                         block.setTrue(False)
-                    if x == 0 or y == 0 or y == int(SCREEN_HEIGHT / G_WIDTH) - 1 or x == int(SCREEN_WIDTH / G_WIDTH) - 1:
+                    if x == 0 or y == 0 or y == int(SCREEN_HEIGHT / G_WIDTH) - 1 or x == int(
+                            SCREEN_WIDTH / G_WIDTH) - 1:
                         block.setTrue(True)
 
     # -----FIND---SPARE--SPOT-----
@@ -369,7 +463,9 @@ def main():
     player.changeAmmo(1)
     player.fastFire = False
     player.id = 1
-    player.color=(255,0,0)
+    player.remaining=1
+    player.rotateSpeed=50
+    player.color = (255, 0, 0)
     player.initialX = player.x
     player.initialY = player.y
     player_list.append(player)
@@ -382,35 +478,425 @@ def main():
     player.maxSpeed = PlAYER_SPEED
     player.initialX = player.x
     player.initialY = player.y
-    player.color=(0,0,255)
+    player.color = (0, 0, 255)
     player.id = 2
+    player.rotateSpeed=50
     player.changeAmmo(1)
+    player.remaining=1
     player_list.append(player)
 
     clock = pygame.time.Clock()
     seconds = 0
     seconds2 = 0
     intro = True
-    game=False
-    outro=False
+    game = False
+    outro = False
 
-#----------------Immages:-------------------------
+    # ----------THE NEXT SECTION IS FOR FUN :D AN ATTEMPT AT ADDING A BOT FOR NOW SIMPLE--------
+    player = Player()
+    x, y = getSpareSpot()
+    player.x = x
+    player.y = y
+    player.remaining = 1
+
+    player.radius = PLAYER_RADIUS
+    player.maxSpeed = PlAYER_SPEED+100
+    player.initialX = player.x
+    player.initialY = player.y
+    player.color = (0, 255, 0)
+    player.id = 3
+    player.changeAmmo(2)
+    player.ammo = 100000
+    player.rotateSpeed=20
+    player_list.append(player)
+
+
+    player = Player()
+    x, y = getSpareSpot()
+    player.x = x
+    player.y = y
+    player.remaining = 1
+    player.rotateSpeed=20
+    player.radius = PLAYER_RADIUS
+    player.maxSpeed = PlAYER_SPEED + 100
+    player.initialX = player.x
+    player.initialY = player.y
+    player.color = (0, 255, 0)
+    player.id = 4
+    player.changeAmmo(2)
+    player.ammo = 100000
+    player_list.append(player)
 
 
 
+
+
+    # ---------DEFINITIONS FOR BOT AND PLAYER MOVEMENT
+    def forward(id):
+        for player in player_list:
+            if player.id == id:
+                player.velocityX = PlAYER_SPEED * math.cos(player.angleFromNormal)
+                player.velocityY = PlAYER_SPEED * math.sin(player.angleFromNormal)
+
+    def backward(id):
+        for player in player_list:
+            if player.id == id:
+                player.velocityX = -PlAYER_SPEED * math.cos(player.angleFromNormal)
+                player.velocityY = -PlAYER_SPEED * math.sin(player.angleFromNormal)
+
+    def stop(id):
+        for player in player_list:
+            if player.id == id:
+                player.velocityY = 0
+                player.velocityX = 0
+
+    def right(id):
+        for player in player_list:
+            if player.id == id:
+                player.angleFromNormal += math.pi / player.rotateSpeed
+
+
+    def left(id):
+        for player in player_list:
+            if player.id == id:
+                player.angleFromNormal -= math.pi / player.rotateSpeed
+
+
+    def fire(id, fps):
+        for player in player_list:
+            if player.id == id:
+
+                for powerup in powerup_set:
+                    if (int(player.x / G_WIDTH) == int(powerup.x / G_WIDTH)) and (
+                            int(player.y / G_WIDTH) == int(powerup.y / G_WIDTH)):
+                        player.changeAmmo(powerup.id)
+                        powerupD_set.add(powerup)
+
+                player.reload += player.fireRate / fps
+                if player.ammo > 0 and player.reload >= PLAYER_RELOAD:
+                    bullet = Bullet()
+                    bullet.ammoType(player.ammoType)
+                    bullet.angleFromNormal = player.angleFromNormal
+                    bullet.x = player.x + player.radius * 2 * math.cos(player.angleFromNormal)
+                    bullet.y = player.y + player.radius * 2 * math.sin(player.angleFromNormal)
+
+                    bullet.velocityX = bullet.velocityBullet * math.cos(bullet.angleFromNormal)
+                    bullet.velocityY = bullet.velocityBullet * math.sin(bullet.angleFromNormal)
+                    player.ammo -= 1
+                    bullet.bounce = player.bounce
+                    player.reload = 0
+                    bullet_set.add(bullet)
+
+    def reload(id, fps):
+        for player in player_list:
+            if player.id == id:
+
+                if player.reload <= PLAYER_RELOAD:
+                    player.reload += player.fireRate / fps
+
+        # ---------bot----------Functions-------
+
+    def findClosest(id):
+        for player in player_list:
+            if player.id == 1:
+                x1 = player.x
+                y1 = player.y
+
+            if player.id == 2:
+                x2 = player.x
+                y2 = player.y
+
+            if player.id == id:
+                x = player.x
+                y = player.y
+            # angle=player.angleFromNormal
+
+        d1 = ((x1 - x) ** 2) + ((y1 - y) ** 2)
+        d2 = ((x2 - x) ** 2) + ((y2 - y) ** 2)
+        #  print (str(y1-y)+", "+str(x1-x))
+        if d1 < d2:
+            angleP = math.acos((x1 - x) / math.sqrt(d1))
+            if y1<y:
+                angleP*=-1
+                if player.angleFromNormal > 0:
+                    player.angleFromNormal *= -1
+            if y1 > y:
+                if player.angleFromNormal < 0:
+                    player.angleFromNormal *= -1
+
+
+            return angleP
+        else:
+            angleP = math.acos((x2 - x) / math.sqrt(d2))
+
+            if y2 < y:
+                angleP *= -1
+                if player.angleFromNormal > 0:
+                    player.angleFromNormal *= -1
+            if y2>y:
+                if player.angleFromNormal<0:
+                    player.angleFromNormal*=-1
+            return angleP
+
+    def follow(x1,y1,id):
+        for player in player_list:
+            if player.id == id:
+                x = player.x
+                y = player.y
+                d1 = ((x1 - x) ** 2) + ((y1 - y) ** 2)
+                angleP = math.acos((x1 - x) / math.sqrt(d1))
+                if y1 < y:
+                    angleP *= -1
+                    if player.angleFromNormal > 0:
+                        player.angleFromNormal *= -1
+                if y1 > y:
+                    if player.angleFromNormal < 0:
+                        player.angleFromNormal *= -1
+                return angleP
+    def hunt():
+        for player in player_list:
+            if player.id > 2:
+                angle = findClosest(player.id)
+                if player.angleFromNormal<angle:
+                    right(player.id)
+                if player.angleFromNormal>angle:
+                    left(player.id)
+
+                forward(player.id)
+                fire(player.id, fps)
+
+    def getDist(x, y, id):
+        for player in player_list:
+            if player.id == id:
+                return (((player.x - x) ** 2) + (player.y - y) ** 2)
+
+    def getCoords(dir, x, y):
+        # dir 1,2,3,4 ==up right down left
+        cList = []
+        x = int(x / G_WIDTH)
+        y = int(y / G_WIDTH)
+        opp = 0
+        if dir == 1:
+            y -= 3
+            opp = 3
+        if dir == 2:
+            x += 3
+            opp = 4
+        if dir == 3:
+            y += 3
+            opp = 1
+        if dir == 4:
+            x -= 3
+            opp = 2
+        cList.append((x * G_WIDTH, y * G_WIDTH))
+        num, dU, dR, dD, dL = possDir(x, y)
+
+        # (with new x and y traveled once in the direction chosen
+        # find coords of next possible movement recursively while num poss moves==2 id following a path.
+        # if the number is 1: return false else true
+        breaker = 0
+        while num == 2 and breaker < 100:
+            breaker += 1
+            if dU and 1 != opp:
+                y -= 3
+                dir = 1
+                opp = 3
+                num, dU, dR, dD, dL = possDir(x, y)
+                cList.append((x * G_WIDTH, y * G_WIDTH))
+
+                continue
+            elif dR and 2 != opp:
+                x += 3
+                dir = 2
+                opp = 4
+                num, dU, dR, dD, dL = possDir(x, y)
+                cList.append((x * G_WIDTH, y * G_WIDTH))
+                continue
+            elif dD and 3 != opp:
+                y += 3
+                dir = 3
+                opp = 1
+                num, dU, dR, dD, dL = possDir(x, y)
+                cList.append((x * G_WIDTH, y * G_WIDTH))
+                continue
+            elif dL and 4 != opp:
+                x -= 3
+                dir = 4
+                opp = 2
+                num, dU, dR, dD, dL = possDir(x, y)
+                cList.append((x * G_WIDTH, y * G_WIDTH))
+
+        if num == 1:
+            return (False, cList, x * G_WIDTH, y * G_WIDTH)
+        else:
+            return (True, cList, x * G_WIDTH, y * G_WIDTH)
+
+    def getNextCoordList(id):
+        for player in player_list:
+            if player.id == id:
+                fdU = 100000000
+                fdR = 100000000
+                fdD = 100000000
+                fdL = 100000000
+                dU=False
+                dR=False
+                dD=False
+                dL=False
+                n,u,r,d,l=possDir(int(player.x/G_WIDTH),int(player.y/G_WIDTH))
+                if u:
+                    dU, clistU, xU, yU = getCoords(1, player.x, player.y)
+                if r:
+                    dR, clistR, xR, yR = getCoords(2, player.x, player.y)
+                if d:
+                    dD, clistD, xD, yD = getCoords(3, player.x, player.y)
+                if l:
+                    dL, clistL, xL, yL = getCoords(4, player.x, player.y)
+
+                if u and dU:
+                    a = getDist(xU, yU, 1)
+                    b = getDist(xU, yU, 2)
+                    if a < b:
+                        fdU = a
+                    else:
+                        fdU = b
+                if r and dR:
+                    a = getDist(xR, yR, 1)
+                    b = getDist(xR, yR, 2)
+                    if a < b:
+                        fdR = a
+                    else:
+                        fdR = b
+                if d and dD:
+                    a = getDist(xD, yD, 1)
+                    b = getDist(xD, yD, 2)
+
+                    if a < b:
+                        fdD = a
+                    else:
+                        fdD = b
+                if l and dL:
+                    a = getDist(xL, yL, 1)
+                    b = getDist(xL, yL, 2)
+                    if a <  b:
+                        fdL = a
+                    else:
+                        fdL = b
+                num=10000000
+
+                if num>fdU:
+                    num=fdU
+                if num>fdR:
+                    num=fdR
+                if num>fdL:
+                    num=fdL
+                if num>fdD:
+                    num=fdD
+                if num==fdU and u:
+
+
+                    return clistU,num
+                    return (xU,yU),num
+                if num==fdR and r:
+
+                    return clistR,num
+                   # return (xR, yR), num
+                if num==fdD and d:
+
+                    return clistD,num
+                # return (xD, yD), num
+                if num==fdL and l:
+
+                    return clistL,num
+                   # return (xL, yL), num
+
+    def gotoCoord(id,x,y):
+
+        for player in player_list:
+            if player.id==id:
+
+                angle = follow(x,y,id)
+
+                if angle > player.angleFromNormal:
+                    right(player.id)
+                if angle < player.angleFromNormal:
+                    left(player.id)
+                forward(player.id)
+
+
+    def possDir(x, y):
+        # return (bool,bool,bool,bool) for directions clockwise from north.
+        dU = True
+        dR = True
+        dD = True
+        dL = True
+        numTrue = 0
+        far = 4
+        for z in range(1, far):
+            if x - z < 0:
+                dL = False
+                break
+            else:
+                for block in grid[x - z][y]:
+                    if block.real:
+                        dL = False
+                        break
+
+        for z in range(1, far):
+            if y + z > len(grid[0]) - 4:
+                dD = False
+                break
+
+            else:
+                for block in grid[x][y + z]:
+                    if block.real:
+                        dD = False
+
+                        break
+        for z in range(1, far):
+            if x + z > len(grid) - 4:
+                dR = False
+                break
+
+            else:
+                for block in grid[x + z][y]:
+                    if block.real:
+                        dR = False
+
+                        break
+
+        for z in range(1, far):
+            if y - z < 0:
+                dU = False
+                break
+
+            else:
+                for block in grid[x][y - z]:
+                    if block.real:
+                        dU = False
+                        break
+        if dU:
+            numTrue += 1
+        if dR:
+            numTrue += 1
+        if dD:
+            numTrue += 1
+        if dL:
+            numTrue += 1
+
+        return (numTrue, dU, dR, dD, dL)
+
+    # ----------------Immages:-------------------------
 
     while True:
-#-----------------INTRO---------------------------
-
-
+        # -----------------INTRO---------------------------
 
         while intro:
             screen.fill(BLACK)
-            #draw intro immage:
+            # draw intro immage:
             img_beginning = pygame.transform.scale(pygame.image.load("img/intro.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT))
             screen.blit(img_beginning, (0, 0))
 
-            #draw buttons:
+            # draw buttons:
 
             bDM = Button()
             bDM.sizeX = 150
@@ -437,24 +923,24 @@ def main():
 
             mouse = pygame.mouse.get_pos()
             click = pygame.mouse.get_pressed()
-            if click[0]==1:
-                if mouse[0]>bDM.getMinX()and mouse[0]<bDM.getMaxX()and mouse[1]>bDM.getMinY()and mouse[1]<bDM.getMaxY():
+            if click[0] == 1:
+                if mouse[0] > bDM.getMinX() and mouse[0] < bDM.getMaxX() and mouse[1] > bDM.getMinY() and mouse[
+                    1] < bDM.getMaxY():
                     intro = False
                     drawMap = True
-                if mouse[0]>bQ.getMinX()and mouse[0]<bQ.getMaxX()and mouse[1]>bQ.getMinY()and mouse[1]<bQ.getMaxY():
+                if mouse[0] > bQ.getMinX() and mouse[0] < bQ.getMaxX() and mouse[1] > bQ.getMinY() and mouse[
+                    1] < bQ.getMaxY():
                     sys.exit()
-
-
-
 
             clock.tick(15)
             pygame.display.flip()
 
+        # ------------INTRO END----------------# -
 
-#------------INTRO END-----------------
-#--------------DRAW MAP SCREEN----------------
-        player1=False
-        player2=False
+
+        # --------------DRAW MAP SCREEN----------------
+        player1 = False
+        player2 = False
         while drawMap:
             screen.fill(BLACK)
             # wall
@@ -462,8 +948,8 @@ def main():
                 for y in range(0, int(SCREEN_HEIGHT / G_WIDTH)):
                     for block in grid[x][y]:
                         pygame.draw.rect(screen, block.color, (block.x, block.y, G_WIDTH, G_WIDTH))
-#-------------buttons------
-           #spawns
+            # -------------buttons---------------------
+            # spawns
             bP1S = Button()
             bP1S.sizeX = 50
             bP1S.sizeY = 20
@@ -484,7 +970,7 @@ def main():
             bP1.colorT = (0, 255, 0)
             bP1.text = 'Spawn Player 1'
             bP1.draw(screen)
-            #spawn 2
+            # spawn 2
             bP2S = Button()
             bP2S.sizeX = 50
             bP2S.sizeY = 20
@@ -505,13 +991,13 @@ def main():
             bP2.colorT = (0, 255, 0)
             bP2.text = 'Spawn Player 2'
             bP2.draw(screen)
-            #random draw
+            # random draw
             bR = Button()
             bR.sizeX = 50
             bR.sizeY = 20
             bR.x = 1.2
             bR.y = 1.05
-            bR.fontSize=23
+            bR.fontSize = 23
             bR.color = (255, 0, 255)
             bR.colorT = (0, 0, 0)
             bR.text = 'D r a w - R a n d o m'
@@ -527,7 +1013,7 @@ def main():
             bC.colorT = (0, 0, 0)
             bC.text = 'C l e a r '
             bC.draw(screen)
-            #play
+            # play
             bP = Button()
             bP.sizeX = 50
             bP.sizeY = 20
@@ -545,50 +1031,60 @@ def main():
             mouse = pygame.mouse.get_pos()
             click = pygame.mouse.get_pressed()
 
-
-            if click[0] == 1 :
+            if click[0] == 1:
 
                 x = int(mouse[0] / G_WIDTH)
                 y = int(mouse[1] / G_WIDTH)
-                if (not (player1 or player2)) and mouse[0]<SCREEN_WIDTH-10 and mouse[1]<SCREEN_HEIGHT-10:
+                if (not (player1 or player2)) and mouse[0] < SCREEN_WIDTH - 10 and mouse[1] < SCREEN_HEIGHT - 10:
                     for block in grid[x][y]:
                         block.setTrue(True)
 
-                if mouse[0] > bP1S.getMinX() and mouse[0] < bP1S.getMaxX() and mouse[1] > bP1S.getMinY() and mouse[1] < bP1S.getMaxY():
-                    player1=False
-                if mouse[0] > bP1.getMinX() and mouse[0] < bP1.getMaxX() and mouse[1] > bP1.getMinY() and mouse[1] < bP1.getMaxY():
-                    player1=True
+                if mouse[0] > bP1S.getMinX() and mouse[0] < bP1S.getMaxX() and mouse[1] > bP1S.getMinY() and mouse[
+                    1] < bP1S.getMaxY():
+                    player1 = False
+                if mouse[0] > bP1.getMinX() and mouse[0] < bP1.getMaxX() and mouse[1] > bP1.getMinY() and mouse[
+                    1] < bP1.getMaxY():
+                    player1 = True
 
-                if mouse[0] > bP2S.getMinX() and mouse[0] < bP2S.getMaxX() and mouse[1] > bP2S.getMinY() and mouse[1] < bP2S.getMaxY():
-                    player2=False
-                if mouse[0] > bP2.getMinX() and mouse[0] < bP2.getMaxX() and mouse[1] > bP2.getMinY() and mouse[1] < bP2.getMaxY():
-                    player2=True
+                if mouse[0] > bP2S.getMinX() and mouse[0] < bP2S.getMaxX() and mouse[1] > bP2S.getMinY() and mouse[
+                    1] < bP2S.getMaxY():
+                    player2 = False
+                if mouse[0] > bP2.getMinX() and mouse[0] < bP2.getMaxX() and mouse[1] > bP2.getMinY() and mouse[
+                    1] < bP2.getMaxY():
+                    player2 = True
 
-                if mouse[0] > bC.getMinX() and mouse[0] < bC.getMaxX() and mouse[1] > bC.getMinY() and mouse[1] < bC.getMaxY():
+                if mouse[0] > bC.getMinX() and mouse[0] < bC.getMaxX() and mouse[1] > bC.getMinY() and mouse[
+                    1] < bC.getMaxY():
                     generateRandomMap(False)
-                if mouse[0] > bR.getMinX() and mouse[0] < bR.getMaxX() and mouse[1] > bR.getMinY() and mouse[1] < bR.getMaxY():
-                    generateRandomMap(True)
+                if mouse[0] > bR.getMinX() and mouse[0] < bR.getMaxX() and mouse[1] > bR.getMinY() and mouse[
+                    1] < bR.getMaxY():
+                    clean()
+                    generateRandomMaze()
 
-                if mouse[0] > bP.getMinX() and mouse[0] < bP.getMaxX() and mouse[1] > bP.getMinY() and mouse[1] < bP.getMaxY():
+                if mouse[0] > bP.getMinX() and mouse[0] < bP.getMaxX() and mouse[1] > bP.getMinY() and mouse[
+                    1] < bP.getMaxY():
                     drawMap = False
                     startTime = pygame.time.get_ticks()
                     game = True
 
-                if player1 and not(mouse[0] > bP1S.getMinX() and mouse[0] < bP1S.getMaxX() and mouse[1] > bP1S.getMinY() and mouse[1] < bP1S.getMaxY()):
+                if player1 and not (
+                        mouse[0] > bP1S.getMinX() and mouse[0] < bP1S.getMaxX() and mouse[1] > bP1S.getMinY() and mouse[
+                    1] < bP1S.getMaxY()):
                     for player in player_list:
                         if player.id == 1:
                             player.initialX = mouse[0]
                             player.initialY = mouse[1]
                             player.x = player.initialX
                             player.y = player.initialY
-                if player2 and not(mouse[0] > bP2S.getMinX() and mouse[0] < bP2S.getMaxX() and mouse[1] > bP2S.getMinY() and mouse[1] < bP2S.getMaxY()):
+                if player2 and not (
+                        mouse[0] > bP2S.getMinX() and mouse[0] < bP2S.getMaxX() and mouse[1] > bP2S.getMinY() and mouse[
+                    1] < bP2S.getMaxY()):
                     for player in player_list:
                         if player.id == 2:
-
                             player.initialX = mouse[0]
                             player.initialY = mouse[1]
-                            player.x=player.initialX
-                            player.y=player.initialY
+                            player.x = player.initialX
+                            player.y = player.initialY
 
             for player in player_list:
                 pygame.draw.line(screen, BLACK, (player.x, player.y), (
@@ -598,12 +1094,11 @@ def main():
             clock.tick(60)
             pygame.display.flip()
 
-
-#---------MAIN LOOP-------------------
+        # ---------MAIN LOOP-------------------
         while game:
 
             fps = clock.get_fps()
-            ms = pygame.time.get_ticks()-startTime
+            ms = pygame.time.get_ticks() - startTime
             seconds = int(ms / 1000)
 
             if fps < 1:
@@ -617,145 +1112,77 @@ def main():
             keys = pygame.key.get_pressed()
 
             if keys[pygame.K_UP]:
-                for player in player_list:
-
-                    if player.id == 1:
-                        player.velocityX = PlAYER_SPEED * math.cos(player.angleFromNormal)
-                        player.velocityY = PlAYER_SPEED * math.sin(player.angleFromNormal)
+                forward(1)
 
             if keys[pygame.K_DOWN]:
-                for player in player_list:
-                    if player.id == 1:
-                        player.velocityX = -PlAYER_SPEED * math.cos(player.angleFromNormal)
-                        player.velocityY = -PlAYER_SPEED * math.sin(player.angleFromNormal)
+                backward(1)
 
-            if keys[pygame.K_DOWN]==False and keys[pygame.K_UP] == False:
-                for player in player_list:
-                    if player.id == 1:
-                        player.velocityY = 0
-                        player.velocityX = 0
+            if keys[pygame.K_DOWN] == False and keys[pygame.K_UP] == False:
+                stop(1)
             if keys[pygame.K_RIGHT]:
-                for player in player_list:
-                    if player.id == 1:
-                        player.angleFromNormal += math.pi / 50
+                right(1)
 
             if keys[pygame.K_LEFT]:
-                for player in player_list:
-                    if player.id == 1:
-                        player.angleFromNormal -= math.pi / 50
+                left(1)
 
                 # ---------PLYER 1----------BULLET-------
 
             if keys[pygame.K_m]:
-
-                for player in player_list:
-                    if player.id == 1:
-
-                        for powerup in powerup_set:
-                            if (int(player.x / G_WIDTH) == int(powerup.x / G_WIDTH)) and (
-                                    int(player.y / G_WIDTH) == int(powerup.y / G_WIDTH)):
-                                player.changeAmmo(powerup.id)
-                                maxPowerUps -= 1
-                                powerupD_set.add(powerup)
-
-                        player.reload += player.fireRate / fps
-                        if player.ammo > 0 and player.reload >= PLAYER_RELOAD:
-                            bullet = Bullet()
-                            bullet.ammoType(player.ammoType)
-                            bullet.angleFromNormal = player.angleFromNormal
-                            bullet.x = player.x + player.radius * 2 * math.cos(player.angleFromNormal)
-                            bullet.y = player.y + player.radius * 2 * math.sin(player.angleFromNormal)
-
-                            bullet.velocityX = bullet.velocityBullet * math.cos(bullet.angleFromNormal)
-                            bullet.velocityY = bullet.velocityBullet * math.sin(bullet.angleFromNormal)
-                            player.ammo -= 1
-                            bullet.bounce = player.bounce
-                            player.reload = 0
-                            bullet_set.add(bullet)
-            if keys[pygame.K_m]==False:
-                for player in player_list:
-                    if player.id == 1:
-
-                        if player.reload <= PLAYER_RELOAD:
-                            player.reload += player.fireRate / fps
-                            # ---------------------------infinit ammo for now----------------------
+                fire(1, fps)
+            if keys[pygame.K_m] == False:
+                reload(1, fps)
+                # ---------------------------infinit ammo for now----------------------
 
             # -----------PLAYER 2--------------------------
             if keys[pygame.K_e]:
-                for player in player_list:
-                    if player.id == 2:
-                        player.velocityX = PlAYER_SPEED * math.cos(player.angleFromNormal)
-                        player.velocityY = PlAYER_SPEED * math.sin(player.angleFromNormal)
+                forward(2)
 
             if keys[pygame.K_d]:
-                for player in player_list:
-                    if player.id == 2:
-                        player.velocityX = -PlAYER_SPEED * math.cos(player.angleFromNormal)
-                        player.velocityY = -PlAYER_SPEED * math.sin(player.angleFromNormal)
+                backward(2)
 
             if keys[pygame.K_d] == False and keys[pygame.K_e] == False:
-                for player in player_list:
-                    if player.id == 2:
-                        player.velocityY = 0
-                        player.velocityX = 0
+                stop(2)
 
             if keys[pygame.K_s]:
-                for player in player_list:
-                    if player.id == 2:
-                        player.angleFromNormal -= math.pi / 50
+                left(2)
 
             if keys[pygame.K_f]:
-                for player in player_list:
-                    if player.id == 2:
-                        player.angleFromNormal += math.pi / 50
+                right(2)
 
             # -------player 2 bullet
             if keys[pygame.K_q]:
-
-                for player in player_list:
-                    if player.id == 2:
-
-                        for powerup in powerup_set:
-                            if (int(player.x / G_WIDTH) == int(powerup.x / G_WIDTH)) and (
-                                    int(player.y / G_WIDTH) == int(powerup.y / G_WIDTH)):
-                                player.changeAmmo(powerup.id)
-                                maxPowerUps -= 1
-                                powerupD_set.add(powerup)
-
-                        player.reload += player.fireRate / fps
-                        if player.ammo > 0 and player.reload >= PLAYER_RELOAD:
-                            bullet = Bullet()
-                            bullet.isAlive = True
-                            bullet.angleFromNormal = player.angleFromNormal
-                            bullet.x = player.x + player.radius * 2 * math.cos(player.angleFromNormal)
-                            bullet.y = player.y + player.radius * 2 * math.sin(player.angleFromNormal)
-                            bullet.ammoType(player.ammoType)
-                            bullet.velocityX = bullet.velocityBullet * math.cos(bullet.angleFromNormal)
-                            bullet.velocityY = bullet.velocityBullet * math.sin(bullet.angleFromNormal)
-                            player.ammo -= 1
-                            bullet.bounce = player.bounce
-                            player.reload = 0
-                            bullet_set.add(bullet)
-
+                fire(2, fps)
             if keys[pygame.K_q] == False:
-                for player in player_list:
-                    if player.id == 2:
-
-                        if player.reload <= PLAYER_RELOAD:
-                            player.reload += player.fireRate / fps
+                reload(2, fps)
 
             # ----------------------------END OF EVENTS---------------------------------------------------------
+            # --------------------AI----------(SHIT)----------Later Consideration -make a maze solver and this hunting algorithm :D---------------
+
+            #hunt()
+            for player in player_list:
+                dist=100000
+
+
+
+
+            # if the one in fr ont is true, turn right, else go forward
+            # function goto (x,y) use the angle one with coordinates stored in some array.
+            # solve maze to get to player.
+            # find possible coordinates you can move to,
+            # choose the closest one to the player
+            # coordinate is stopped when any sort of junction present's itself.
 
             # -------------------------PHYSICS AND GAME LOGIC
 
             # bullet physics with blocks --------------for now same as player physics?---------------:
-
             for bullet in bullet_set:
                 x = int(bullet.x / G_WIDTH)
                 y = int(bullet.y / G_WIDTH)
                 xPot = bullet.x + (1 / fps) * bullet.velocityX
                 yPot = bullet.y + (1 / fps) * bullet.velocityY
-
+                if x + 1 > len(grid) or y + 1 > len(grid[0]):
+                    bulletD_set.add(bullet)
+                    continue
                 # for block on right (x+1) out of range
                 for block in grid[x + 1][y]:
                     # if real and crossing(x velocity positive) make velocity x 0 in that direction
@@ -765,7 +1192,7 @@ def main():
                             if bullet.id == 3:
                                 if block.x == 0 or block.y == 0 or int(block.y / G_WIDTH) == int(
                                         SCREEN_HEIGHT / G_WIDTH) - 1 or (block.x / G_WIDTH) == int(
-                                        SCREEN_WIDTH / G_WIDTH) - 1:
+                                    SCREEN_WIDTH / G_WIDTH) - 1:
                                     bulletD_set.add(bullet)
                                 else:
                                     block.real = False
@@ -789,7 +1216,7 @@ def main():
                             if bullet.id == 3:
                                 if block.x == 0 or block.y == 0 or int(block.y / G_WIDTH) == int(
                                         SCREEN_HEIGHT / G_WIDTH) - 1 or (block.x / G_WIDTH) == int(
-                                        SCREEN_WIDTH / G_WIDTH) - 1:
+                                    SCREEN_WIDTH / G_WIDTH) - 1:
                                     bulletD_set.add(bullet)
                                 else:
                                     block.real = False
@@ -811,7 +1238,7 @@ def main():
                             if bullet.id == 3:
                                 if block.x == 0 or block.y == 0 or int(block.y / G_WIDTH) == int(
                                         SCREEN_HEIGHT / G_WIDTH) - 1 or (block.x / G_WIDTH) == int(
-                                        SCREEN_WIDTH / G_WIDTH) - 1:
+                                    SCREEN_WIDTH / G_WIDTH) - 1:
                                     bulletD_set.add(bullet)
                                 else:
                                     block.real = False
@@ -827,13 +1254,14 @@ def main():
                             else:
                                 bulletD_set.add(bullet)
                 # block under
+
                 for block in grid[x][y + 1]:
                     if block.real:
                         if yPot + bullet.length > (block.y) and bullet.velocityY > 0:
                             if bullet.id == 3:
                                 if block.x == 0 or block.y == 0 or int(block.y / G_WIDTH) == int(
                                         SCREEN_HEIGHT / G_WIDTH) - 1 or (block.x / G_WIDTH) == int(
-                                        SCREEN_WIDTH / G_WIDTH) - 1:
+                                    SCREEN_WIDTH / G_WIDTH) - 1:
                                     bulletD_set.add(bullet)
                                 else:
                                     block.real = False
@@ -863,8 +1291,7 @@ def main():
 
             # --------------------Power Ups----------------------------
 
-            if seconds2 % 5 == 0 and maxPowerUps < MAX_POWERUPS and seconds != seconds2:
-
+            if seconds2 % 5 == 0 and seconds != seconds2:
                 powerup = PowerUp()
                 x, y = getSpareSpot()
                 x, y = getSpareSpot()
@@ -872,12 +1299,10 @@ def main():
                 powerup.y = y
                 powerup.width = G_WIDTH
                 powerup.type(random.randint(1, 6))
-                maxPowerUps += 1
+
                 powerup_set.add(powerup)
 
             # --update seconds
-
-
 
             # blocking player according to grid filled   (cannot access grid that responds as true.)
 
@@ -940,8 +1365,41 @@ def main():
                         pygame.draw.rect(screen, block.color, (block.x, block.y, G_WIDTH, G_WIDTH))
 
             # players
+#testing---------------------------------
 
             for player in player_list:
+                if player.id >=3:
+                    if player.velocityX==0 or seconds!=seconds2:
+                        coord_list[player.id-3],dist=getNextCoordList(player.id)
+                    x,y=coord_list[player.id-3][0]
+
+
+
+                    dU, clistU, xU, yU = getCoords(1, player.x, player.y)
+                    pygame.draw.rect(screen, (200, 0, 0), (xU, yU, G_WIDTH, G_WIDTH))
+                    dR, clistR, xR, yR = getCoords(2, player.x, player.y)
+                    pygame.draw.rect(screen, (200, 0, 0), (xR, yR, G_WIDTH, G_WIDTH))
+                    dD, clistD, xD, yD = getCoords(3, player.x, player.y)
+                    pygame.draw.rect(screen, (200, 0, 0), (xD, yD, G_WIDTH, G_WIDTH))
+                    dL, clistL, xL, yL = getCoords(4, player.x, player.y)
+                    pygame.draw.rect(screen, (200, 0, 0), (xL, yL, G_WIDTH, G_WIDTH))
+                    pygame.draw.rect(screen, (0,200,0), (x, y, G_WIDTH, G_WIDTH))
+                    a = getDist(player.x, player.y, 1)
+                    b = getDist(player.x, player.y, 2)
+                    print (str(a)+","+str(b))
+                    if a<15000 or b<15000:
+                        hunt()
+                    else:
+                        if getDist(x,y,player.id)>200:
+
+                            gotoCoord(player.id,x,y)
+                        else:
+                            stop(player.id)
+
+            for player in player_list:
+
+
+
                 x = int(player.x / G_WIDTH)
                 y = int(player.y / G_WIDTH)
 
@@ -959,7 +1417,7 @@ def main():
                 pygame.draw.line(screen, BLACK, (player.x, player.y), (
                     player.x + player.radius * 2 * math.cos(player.angleFromNormal),
                     player.y + player.radius * 2 * math.sin(player.angleFromNormal)), 2)
-                pygame.draw.circle( screen ,player.color, (int(player.x), int(player.y)), int(player.radius))
+                pygame.draw.circle(screen, player.color, (int(player.x), int(player.y)), int(player.radius))
 
                 # -----------DRAW_POWERUPS
                 for powerup in powerup_set:
@@ -985,22 +1443,23 @@ def main():
             # --- Wrap-up--draw score:
 
             for player in player_list:
-                if player.id==1:
+                if player.id == 1:
                     scorep2 = player.score
-                if player.id==2:
+                if player.id == 2:
                     scorep1 = player.score
-            font = pygame.font.Font(None,50)
-            text = font.render("score P red: "+str(scorep1)+"------"+str(seconds)+"------"+"score P blue: "+str(scorep2), 1,(100,0,255))
+            font = pygame.font.Font(None, 50)
+            text = font.render("score P red: " + str(scorep1) + "------" + str(seconds) + "--FPS: " + str(
+                int(fps)) + "------" + "score P blue: " + str(scorep2), 1, (100, 0, 255))
             textpos = text.get_rect()
             textpos.centerx = SCREEN_WIDTH / 2
-            textpos.centery = SCREEN_HEIGHT /15
+            textpos.centery = SCREEN_HEIGHT / 15
             screen.blit(text, textpos)
 
-            #update time if needed
+            # update time if needed
             if seconds != seconds2:
-                if seconds>(3*60):
-                    game=False
-                    outro=True
+                if seconds > (3 * 60):
+                    game = False
+                    outro = True
                 seconds2 = seconds
             # Limit to 60 frames per second
 
@@ -1008,7 +1467,7 @@ def main():
 
             # Go ahead and update the screen with what we've drawn.
             pygame.display.flip()
-    #---------OUTRO--------------
+        # ---------OUTRO--------------
         while outro:
             screen.fill(BLACK)
             # draw intro immage:
@@ -1037,24 +1496,26 @@ def main():
             bQ.text = 'Quit'
             bQ.draw(screen)
             for player in player_list:
-                if player.id==1:
+                if player.id == 1:
                     scorep2 = player.score
-                if player.id==2:
+                if player.id == 2:
                     scorep1 = player.score
-            #score:
-            font = pygame.font.Font(None,50)
-            text = font.render("score P red: "+str(scorep1)+"------"+str(seconds)+"------"+"score P blue: "+str(scorep2), 1,(100,0,255))
+            # score:
+            font = pygame.font.Font(None, 50)
+            text = font.render(
+                "score P red: " + str(scorep1) + "------" + str(seconds) + "------" + "score P blue: " + str(scorep2),
+                1, (100, 0, 255))
             textpos = text.get_rect()
             textpos.centerx = SCREEN_WIDTH / 2
-            textpos.centery = SCREEN_HEIGHT /15
+            textpos.centery = SCREEN_HEIGHT / 15
             screen.blit(text, textpos)
             # player win:
             font = pygame.font.Font(None, 50)
-            if scorep2>scorep1:
-                text = font.render("PLAYER BLUE WELL DONE!",1, (0, 0, 255))
-            if scorep1>scorep2:
-                text = font.render( "PLAYER RED WELL DONE!",1, (255, 0, 0))
-            if scorep1==scorep2:
+            if scorep2 > scorep1:
+                text = font.render("PLAYER BLUE WELL DONE!", 1, (0, 0, 255))
+            if scorep1 > scorep2:
+                text = font.render("PLAYER RED WELL DONE!", 1, (255, 0, 0))
+            if scorep1 == scorep2:
                 text = font.render("IT'S A DRAW HOW SAD", 1, (255, 255, 255))
             textpos = text.get_rect()
             textpos.centerx = SCREEN_WIDTH / 2
@@ -1069,13 +1530,14 @@ def main():
                 if mouse[0] > bDM.getMinX() and mouse[0] < bDM.getMaxX() and mouse[1] > bDM.getMinY() and mouse[
                     1] < bDM.getMaxY():
                     intro = True
-                    outro=False
+                    outro = False
                 if mouse[0] > bQ.getMinX() and mouse[0] < bQ.getMaxX() and mouse[1] > bQ.getMinY() and mouse[
                     1] < bQ.getMaxY():
                     sys.exit()
 
             clock.tick(15)
             pygame.display.flip()
+
 
 if __name__ == "__main__":
     main()
