@@ -670,9 +670,9 @@ def main():
                     if player.angleFromNormal < 0:
                         player.angleFromNormal *= -1
                 return angleP
-    def hunt():
+    def hunt(id):
         for player in player_list:
-            if player.id > 2:
+            if player.id ==id:
                 angle = findClosest(player.id)
                 if player.angleFromNormal<angle:
                     right(player.id,20)
@@ -1409,9 +1409,11 @@ def main():
                     if b<a:
                         dist[player.id - 3] = b
                     if dist[player.id-3]<10000:
-                        hunt()
+
+                        hunt(player.id)
                     else:
                         if getDist(x,y,player.id)>200:
+
 
                             gotoCoord(player.id,x,y)
                         else:
@@ -1425,16 +1427,15 @@ def main():
                 y = int(player.y / G_WIDTH)
 
                 # shows blocks (collision detection) for player
-                #           for block in grid[x + 1][y]:
-                #              pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-                #         for block in grid[x - 1][y]:
-                #            pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-                #       for block in grid[x][y + 1]:
-                #          pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-                #     for block in grid[x][y - 1]:
-                #        pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-
-                # ------DRAW---PLAYER
+                # for block in grid[x + 1][y]:
+                #     pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                # for block in grid[x - 1][y]:
+                #     pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                # for block in grid[x][y + 1]:
+                #     pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                # for block in grid[x][y - 1]:
+                #     pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+# ------DRAW---PLAYER
                 pygame.draw.line(screen, BLACK, (player.x, player.y), (
                     player.x + player.radius * 2 * math.cos(player.angleFromNormal),
                     player.y + player.radius * 2 * math.sin(player.angleFromNormal)), 2)
@@ -1452,14 +1453,14 @@ def main():
                         bullet.y + bullet.length * math.sin(bullet.angleFromNormal)), 2)
 
                     # show collision detection:D
-                    for block in grid[x + 1][y]:
-                        pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-                    for block in grid[x - 1][y]:
-                        pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-                    for block in grid[x][y + 1]:
-                        pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
-                    for block in grid[x][y - 1]:
-                        pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                    # for block in grid[x + 1][y]:
+                    #     pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                    # for block in grid[x - 1][y]:
+                    #     pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                    # for block in grid[x][y + 1]:
+                    #     pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
+                    # for block in grid[x][y - 1]:
+                    #     pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
 
             # --- Wrap-up--draw score:
 
