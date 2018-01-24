@@ -713,19 +713,21 @@ def main():
                         cx1=temp
                     for x in range(int(cx),int(cx1)):
                         yi=int(m*x+c)
-                        if (int(x/G_WIDTH)>len(grid) or int(yi/G_WIDTH)>len(grid[0]) ):
+                        if (int(x/G_WIDTH)>len(grid)-4 or int(yi/G_WIDTH)>len(grid[0])-4 or int(yi/G_WIDTH)<4or int(x/G_WIDTH) <4 ):
                             continue
-                        for block in grid[int(x/G_WIDTH)][int(yi/G_WIDTH)]:
-                            if block.real:
-                                return False
+                        else:
+                            for block in grid[int(x/G_WIDTH)][int(yi/G_WIDTH)]:
+                                if block.real:
+                                    return False
 
                     for y in range(int(cy),int(cy1)):
                         xi=int((y-c)/m)
-                        if (int(xi/G_WIDTH)>len(grid) or int(y/G_WIDTH)>len(grid[0]) ):
+                        if (int(xi/G_WIDTH)>len(grid)-4 or int(y/G_WIDTH)>len(grid[0])-4 or int(xi/G_WIDTH)<4or int(y/G_WIDTH) <4 ):
                             continue
-                        for block in grid[int(xi/G_WIDTH)][int(y/G_WIDTH)]:
-                            if block.real:
-                                return False
+                        else:
+                            for block in grid[int(xi/G_WIDTH)][int(y/G_WIDTH)]:
+                                if block.real:
+                                    return False
                     return True
 
                 if d1>d2:
@@ -745,19 +747,21 @@ def main():
                         cx2=temp
                     for x in range(int(cx),int(cx2)):
                         yi=int(m*x+c)
-                        if (int(x/G_WIDTH)>len(grid) or int(yi/G_WIDTH)>len(grid[0]) ):
+                        if (int(x/G_WIDTH)>len(grid)-4 or int(yi/G_WIDTH)>len(grid[0])-4or int(yi/G_WIDTH)<4or int(x/G_WIDTH) <4  ):
                             continue
-                        for block in grid[int(x/G_WIDTH)][int(yi/G_WIDTH)]:
-                            if block.real:
-                                return False
+                        else:
+                            for block in grid[int(x/G_WIDTH)][int(yi/G_WIDTH)]:
+                                if block.real:
+                                    return False
 
                     for y in range(int(cy),int(cy2)):
                         xi=int((y-c)/m)
-                        if (int(xi/G_WIDTH)>len(grid) or int(y/G_WIDTH)>len(grid[0]) ):
+                        if (int(xi/G_WIDTH)>len(grid)-4 or int(y/G_WIDTH)>len(grid[0])-4 or int(xi/G_WIDTH)<4or int(y/G_WIDTH) <4 ):
                             continue
-                        for block in grid[int(xi/G_WIDTH)][int(y/G_WIDTH)]:
-                            if block.real:
-                                return False
+                        else:
+                            for block in grid[int(xi/G_WIDTH)][int(y/G_WIDTH)]:
+                                if block.real:
+                                    return False
                     return True
             else:
                 pass
@@ -919,6 +923,7 @@ def main():
                 if num==fdL and l:
 
                     return clistL,num
+
                    # return (xL, yL), num
 
     def gotoCoord(id,x,y):
@@ -943,49 +948,39 @@ def main():
         dL = True
         numTrue = 0
         far = 4
-        for z in range(1, far):
-            if x - z < 0:
-                dL = False
-                break
-            else:
-                for block in grid[x - z][y]:
-                    if block.real:
-                        dL = False
-                        break
+        if x<5:
+            x=5
+        if x>len(grid)-5:
+            x=len(grid)-5
+        if y<5:
+            y=5
+        if y>len(grid[0])-5:
+            y=len(grid[0])-5
 
         for z in range(1, far):
-            if y + z > len(grid[0]) - 4:
-                dD = False
-                break
-
-            else:
-                for block in grid[x][y + z]:
-                    if block.real:
-                        dD = False
-
-                        break
-        for z in range(1, far):
-            if x + z > len(grid) - 4:
-                dR = False
-                break
-
-            else:
-                for block in grid[x + z][y]:
-                    if block.real:
-                        dR = False
-
-                        break
+            for block in grid[x - z][y]:
+                if block.real:
+                    dL = False
+                    break
 
         for z in range(1, far):
-            if y - z < 0:
-                dU = False
-                break
+            for block in grid[x][y + z]:
+                if block.real:
+                    dD = False
 
-            else:
-                for block in grid[x][y - z]:
-                    if block.real:
-                        dU = False
-                        break
+                    break
+        for z in range(1, far):
+            for block in grid[x + z][y]:
+                if block.real:
+                    dR = False
+
+                    break
+
+        for z in range(1, far):
+            for block in grid[x][y - z]:
+                if block.real:
+                    dU = False
+                    break
         if dU:
             numTrue += 1
         if dR:
@@ -1232,10 +1227,10 @@ def main():
             if keys[pygame.K_DOWN] == False and keys[pygame.K_UP] == False:
                 stop(1)
             if keys[pygame.K_RIGHT]:
-                right(1,30)
+                right(1,40)
 
             if keys[pygame.K_LEFT]:
-                left(1,30)
+                left(1,40)
 
                 # ---------PLYER 1----------BULLET-------
 
@@ -1256,10 +1251,10 @@ def main():
                 stop(2)
 
             if keys[pygame.K_s]:
-                left(2,30)
+                left(2,40)
 
             if keys[pygame.K_f]:
-                right(2,30)
+                right(2,40)
 
             # -------player 2 bullet
             if keys[pygame.K_q]:
@@ -1481,19 +1476,20 @@ def main():
                 if player.id >=3:
                     if player.velocityX==0 or seconds!=seconds2:
                         coord_list[player.id-3],distanceTo=getNextCoordList(player.id)
+
                     x,y=coord_list[player.id-3][0]
 
 
 
-                    # dU, clistU, xU, yU = getCoords(1, player.x, player.y)
-                    # pygame.draw.rect(screen, (200, 0, 0), (xU, yU, G_WIDTH, G_WIDTH))
-                    # dR, clistR, xR, yR = getCoords(2, player.x, player.y)
-                    # pygame.draw.rect(screen, (200, 0, 0), (xR, yR, G_WIDTH, G_WIDTH))
-                    # dD, clistD, xD, yD = getCoords(3, player.x, player.y)
-                    # pygame.draw.rect(screen, (200, 0, 0), (xD, yD, G_WIDTH, G_WIDTH))
-                    # dL, clistL, xL, yL = getCoords(4, player.x, player.y)
-                    # pygame.draw.rect(screen, (200, 0, 0), (xL, yL, G_WIDTH, G_WIDTH))
-                    # pygame.draw.rect(screen, (0,200,0), (x, y, G_WIDTH, G_WIDTH))
+                    dU, clistU, xU, yU = getCoords(1, player.x, player.y)
+                    pygame.draw.rect(screen, (200, 0, 0), (xU, yU, G_WIDTH, G_WIDTH))
+                    dR, clistR, xR, yR = getCoords(2, player.x, player.y)
+                    pygame.draw.rect(screen, (200, 0, 0), (xR, yR, G_WIDTH, G_WIDTH))
+                    dD, clistD, xD, yD = getCoords(3, player.x, player.y)
+                    pygame.draw.rect(screen, (200, 0, 0), (xD, yD, G_WIDTH, G_WIDTH))
+                    dL, clistL, xL, yL = getCoords(4, player.x, player.y)
+                    pygame.draw.rect(screen, (200, 0, 0), (xL, yL, G_WIDTH, G_WIDTH))
+                    pygame.draw.rect(screen, (0,200,0), (x, y, G_WIDTH, G_WIDTH))
 
                     a = getDist(player.x, player.y, 1)
                     b = getDist(player.x, player.y, 2)
@@ -1548,7 +1544,7 @@ def main():
 
 
 
-                    # show collision detection:D
+                    # #show collision detection:D
                     # for block in grid[x + 1][y]:
                     #     pygame.draw.rect(screen, (random.randint(0, 255), 100, 100), (block.x, block.y, G_WIDTH, G_WIDTH))
                     # for block in grid[x - 1][y]:
