@@ -714,7 +714,7 @@ def main():
                     for x in range(int(cx),int(cx1)):
                         yi=int(m*x+c)
                         if (int(x/G_WIDTH)>len(grid) or int(yi/G_WIDTH)>len(grid[0]) ):
-                            pass
+                            continue
                         for block in grid[int(x/G_WIDTH)][int(yi/G_WIDTH)]:
                             if block.real:
                                 return False
@@ -722,7 +722,7 @@ def main():
                     for y in range(int(cy),int(cy1)):
                         xi=int((y-c)/m)
                         if (int(xi/G_WIDTH)>len(grid) or int(y/G_WIDTH)>len(grid[0]) ):
-                            pass
+                            continue
                         for block in grid[int(xi/G_WIDTH)][int(y/G_WIDTH)]:
                             if block.real:
                                 return False
@@ -746,7 +746,7 @@ def main():
                     for x in range(int(cx),int(cx2)):
                         yi=int(m*x+c)
                         if (int(x/G_WIDTH)>len(grid) or int(yi/G_WIDTH)>len(grid[0]) ):
-                            pass
+                            continue
                         for block in grid[int(x/G_WIDTH)][int(yi/G_WIDTH)]:
                             if block.real:
                                 return False
@@ -754,7 +754,7 @@ def main():
                     for y in range(int(cy),int(cy2)):
                         xi=int((y-c)/m)
                         if (int(xi/G_WIDTH)>len(grid) or int(y/G_WIDTH)>len(grid[0]) ):
-                            pass
+                            continue
                         for block in grid[int(xi/G_WIDTH)][int(y/G_WIDTH)]:
                             if block.real:
                                 return False
