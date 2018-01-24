@@ -675,6 +675,94 @@ def main():
                     if player.angleFromNormal < 0:
                         player.angleFromNormal *= -1
                 return angleP
+    def isClear(id):
+        x1 = 0
+        x2 = 0
+        y1 = 0
+        y2 = 0
+        for player in player_list:
+
+
+            if player.id==1:
+                cx1=player.x
+                cy1=player.y
+            if player.id==2:
+                cx2=player.x
+                cy2=player.y
+            if player.id==id:
+                cx=player.x
+                cy=player.y
+                #rest of code
+                d1 = ((cx - cx1) ** 2) + ((cy - cy1) ** 2)
+                d2 = ((cx - cx2) ** 2) + ((cy - cy2) ** 2)
+
+                if d1 < d2:
+
+                    if (cx-cx1)==0:
+                        m=(cy-cy1)/0.01
+                    else:
+                        m=(cy-cy1)/(cx-cx1)
+                    c=cy-m*cx
+                    if cy1<cy:
+                        temp=cy
+                        cy=cy1
+                        cy1=temp
+                    if cx1<cx:
+                        temp=cx
+                        cx=cx1
+                        cx1=temp
+                    for x in range(int(cx),int(cx1)):
+                        yi=int(m*x+c)
+                        if (int(x/G_WIDTH)>len(grid) or int(yi/G_WIDTH)>len(grid[0]) ):
+                            pass
+                        for block in grid[int(x/G_WIDTH)][int(yi/G_WIDTH)]:
+                            if block.real:
+                                return False
+
+                    for y in range(int(cy),int(cy1)):
+                        xi=int((y-c)/m)
+                        if (int(xi/G_WIDTH)>len(grid) or int(y/G_WIDTH)>len(grid[0]) ):
+                            pass
+                        for block in grid[int(xi/G_WIDTH)][int(y/G_WIDTH)]:
+                            if block.real:
+                                return False
+                    return True
+
+                if d1>d2:
+
+                    if (cx-cx2)==0:
+                        m=(cy-cy2)/0.01
+                    else:
+                        m=(cy-cy2)/(cx-cx2)
+                    c=cy-m*cx
+                    if cy2<cy:
+                        temp=cy
+                        cy=cy2
+                        cy2=temp
+                    if cx2<cx:
+                        temp=cx
+                        cx=cx2
+                        cx2=temp
+                    for x in range(int(cx),int(cx2)):
+                        yi=int(m*x+c)
+                        if (int(x/G_WIDTH)>len(grid) or int(yi/G_WIDTH)>len(grid[0]) ):
+                            pass
+                        for block in grid[int(x/G_WIDTH)][int(yi/G_WIDTH)]:
+                            if block.real:
+                                return False
+
+                    for y in range(int(cy),int(cy2)):
+                        xi=int((y-c)/m)
+                        if (int(xi/G_WIDTH)>len(grid) or int(y/G_WIDTH)>len(grid[0]) ):
+                            pass
+                        for block in grid[int(xi/G_WIDTH)][int(y/G_WIDTH)]:
+                            if block.real:
+                                return False
+                    return True
+            else:
+                pass
+
+
     def hunt(id):
         for player in player_list:
             if player.id ==id:
@@ -1415,13 +1503,12 @@ def main():
                         dist[player.id-3]=a
                     if b<a:
                         dist[player.id - 3] = b
-                    if dist[player.id-3]<10000:
+                        #check y=mx +c for all blocks in that range and if true is returned then you can hunt...
+                    if isClear(player.id):
                        # print (str(player.id))
                         hunt(player.id)
                     else:
                         if getDist(x,y,player.id)>100:
-
-
                             gotoCoord(player.id,x+G_WIDTH/2,y+G_WIDTH/2)
                         else:
                             stop(player.id)
@@ -1458,6 +1545,8 @@ def main():
                     pygame.draw.line(screen, BLACK, (bullet.x, bullet.y), (
                         bullet.x + bullet.length * math.cos(bullet.angleFromNormal),
                         bullet.y + bullet.length * math.sin(bullet.angleFromNormal)), 2)
+
+
 
                     # show collision detection:D
                     # for block in grid[x + 1][y]:
