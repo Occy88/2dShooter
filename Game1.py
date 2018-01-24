@@ -58,6 +58,7 @@ class PowerUp:
         self.id = 0
         self.color = (0, 0, 0)
 
+
     def type(self, x):
         if x == 1:
             self.id = 1
@@ -615,6 +616,7 @@ def main():
 
     def findClosest(id):
         for player in player_list:
+          #  print ("id in: "+str(player.id))
             if player.id == 1:
                 x1 = player.x
                 y1 = player.y
@@ -626,34 +628,37 @@ def main():
             if player.id == id:
                 x = player.x
                 y = player.y
+
             # angle=player.angleFromNormal
 
-        d1 = ((x1 - x) ** 2) + ((y1 - y) ** 2)
-        d2 = ((x2 - x) ** 2) + ((y2 - y) ** 2)
-        #  print (str(y1-y)+", "+str(x1-x))
-        if d1 < d2:
-            angleP = math.acos((x1 - x) / math.sqrt(d1))
-            if y1<y:
-                angleP*=-1
-                if player.angleFromNormal > 0:
-                    player.angleFromNormal *= -1
-            if y1 > y:
-                if player.angleFromNormal < 0:
-                    player.angleFromNormal *= -1
+                d1 = ((x1 - x) ** 2) + ((y1 - y) ** 2)
+                d2 = ((x2 - x) ** 2) + ((y2 - y) ** 2)
+                #  print (str(y1-y)+", "+str(x1-x))
+                if d1 < d2:
+                    angleP = math.acos((x1 - x) / math.sqrt(d1))
+                    if y1<y:
+                        angleP*=-1
+                        if player.angleFromNormal > 0:
+                            player.angleFromNormal *= -1
+                    if y1 > y:
+                        if player.angleFromNormal < 0:
+                            player.angleFromNormal *= -1
 
 
-            return angleP
-        else:
-            angleP = math.acos((x2 - x) / math.sqrt(d2))
+                    return angleP
+                else:
+                    angleP = math.acos((x2 - x) / math.sqrt(d2))
 
-            if y2 < y:
-                angleP *= -1
-                if player.angleFromNormal > 0:
-                    player.angleFromNormal *= -1
-            if y2>y:
-                if player.angleFromNormal<0:
-                    player.angleFromNormal*=-1
-            return angleP
+                    if y2 < y:
+                        angleP *= -1
+                        if player.angleFromNormal > 0:
+                            player.angleFromNormal *= -1
+                    if y2>y:
+                        if player.angleFromNormal<0:
+                            player.angleFromNormal*=-1
+                    return angleP
+            else:
+                pass
 
     def follow(x1,y1,id):
         for player in player_list:
@@ -673,7 +678,9 @@ def main():
     def hunt(id):
         for player in player_list:
             if player.id ==id:
-                angle = findClosest(player.id)
+              #  print("idp: "+str(player.id))
+              #  print("id: "+str(id))
+                angle = findClosest(id)
                 if player.angleFromNormal<angle:
                     right(player.id,20)
                 if player.angleFromNormal>angle:
@@ -1390,32 +1397,32 @@ def main():
 
 
 
-                    dU, clistU, xU, yU = getCoords(1, player.x, player.y)
-                    pygame.draw.rect(screen, (200, 0, 0), (xU, yU, G_WIDTH, G_WIDTH))
-                    dR, clistR, xR, yR = getCoords(2, player.x, player.y)
-                    pygame.draw.rect(screen, (200, 0, 0), (xR, yR, G_WIDTH, G_WIDTH))
-                    dD, clistD, xD, yD = getCoords(3, player.x, player.y)
-                    pygame.draw.rect(screen, (200, 0, 0), (xD, yD, G_WIDTH, G_WIDTH))
-                    dL, clistL, xL, yL = getCoords(4, player.x, player.y)
-                    pygame.draw.rect(screen, (200, 0, 0), (xL, yL, G_WIDTH, G_WIDTH))
-                    pygame.draw.rect(screen, (0,200,0), (x, y, G_WIDTH, G_WIDTH))
+                    # dU, clistU, xU, yU = getCoords(1, player.x, player.y)
+                    # pygame.draw.rect(screen, (200, 0, 0), (xU, yU, G_WIDTH, G_WIDTH))
+                    # dR, clistR, xR, yR = getCoords(2, player.x, player.y)
+                    # pygame.draw.rect(screen, (200, 0, 0), (xR, yR, G_WIDTH, G_WIDTH))
+                    # dD, clistD, xD, yD = getCoords(3, player.x, player.y)
+                    # pygame.draw.rect(screen, (200, 0, 0), (xD, yD, G_WIDTH, G_WIDTH))
+                    # dL, clistL, xL, yL = getCoords(4, player.x, player.y)
+                    # pygame.draw.rect(screen, (200, 0, 0), (xL, yL, G_WIDTH, G_WIDTH))
+                    # pygame.draw.rect(screen, (0,200,0), (x, y, G_WIDTH, G_WIDTH))
 
                     a = getDist(player.x, player.y, 1)
                     b = getDist(player.x, player.y, 2)
-                    print(str(player.id-3))
+
                     if a<b:
 
                         dist[player.id-3]=a
                     if b<a:
                         dist[player.id - 3] = b
                     if dist[player.id-3]<10000:
-
+                       # print (str(player.id))
                         hunt(player.id)
                     else:
-                        if getDist(x,y,player.id)>200:
+                        if getDist(x,y,player.id)>100:
 
 
-                            gotoCoord(player.id,x,y)
+                            gotoCoord(player.id,x+G_WIDTH/2,y+G_WIDTH/2)
                         else:
                             stop(player.id)
 
